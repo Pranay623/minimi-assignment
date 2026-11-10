@@ -12,6 +12,7 @@ conversation from another day. Explain the interpreted absolute date briefly whe
 history is absent, say so and ask for the missing shortlist or answer. Search cannot recover private conversations.
 If multiple baselines fit and the distinction changes the answer, ask one focused question before searching.
 A recall-only question does not need the web. A request to recheck an old answer does.
+Questions from failed or cancelled turns are real user history, but have no completed answer. Never invent one.
 Use the most recent explicit user correction, preserving older assertions as superseded context.
 Truncated retrieval is not exhaustive: state the limitation if asked for everything from that day.
 

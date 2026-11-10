@@ -211,7 +211,7 @@ export class Store {
     const params: (string | number)[] = [owner, Number(options.demo)];
     let sql = `SELECT t.* FROM turns t JOIN conversations c ON c.id = t.conversation_id`;
     if (options.query) sql += ' JOIN turns_fts ON turns_fts.rowid = t.rowid';
-    sql += " WHERE c.owner = ? AND c.demo = ? AND t.status = 'complete'";
+    sql += " WHERE c.owner = ? AND c.demo = ? AND t.status != 'pending'";
     if (options.conversationId) {
       sql += ' AND c.id = ?';
       params.push(options.conversationId);
@@ -236,6 +236,7 @@ export class Store {
     return this.db
       .prepare(sql)
       .all(...params)
-      .map(readTurn);
+      .map(readTurn)
+      .map((turn) => (turn.status === 'complete' ? turn : { ...turn, answer: '', sources: [] }));
   }
 }

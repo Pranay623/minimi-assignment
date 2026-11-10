@@ -117,7 +117,7 @@ describe('durable, scoped recall', () => {
     );
     expect(retrieveMemory(store, 'alice', current.id, 'CRM Monday', now, 'UTC').turns).toEqual([]);
   });
-  it('does not recall interrupted answers as knowledge', () => {
+  it('recalls the original question after cancellation, but never the partial answer', () => {
     const store = setup();
     const chat = store.createConversation('alice');
     const turn = store.beginTurn(
@@ -128,9 +128,18 @@ describe('durable, scoped recall', () => {
       '2026-11-03T12:00:00Z',
     );
     store.finishTurn('alice', { ...turn, status: 'cancelled', answer: 'Unverified price' });
-    expect(
-      store.recall('alice', { query: lexicalQuery('Postgres hosting'), limit: 10, demo: false }),
-    ).toEqual([]);
+    const recalled = store.recall('alice', {
+      query: lexicalQuery('Postgres hosting'),
+      limit: 10,
+      demo: false,
+    });
+    expect(recalled).toHaveLength(1);
+    expect(recalled[0]).toMatchObject({
+      question: 'Postgres hosting',
+      answer: '',
+      sources: [],
+      status: 'cancelled',
+    });
   });
   it('enforces ownership for reads, updates and deletes', () => {
     const store = setup();

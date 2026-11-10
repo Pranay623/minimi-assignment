@@ -51,14 +51,17 @@ export class GoogleModel implements LanguageModel {
   async respond(request: ModelRequest): Promise<ModelResponse> {
     try {
       const contents: Content[] = [];
+      const providerIds = new Map<string, string | undefined>();
       for (const item of request.input) {
         if (item.type === 'continuation') {
           if (item.provider !== 'google') throw new Error('Mismatched model continuation');
-          contents.push(item.value as Content);
+          const previous = item.value as { content: Content; ids: [string, string | undefined][] };
+          contents.push(previous.content);
+          previous.ids.forEach(([local, remote]) => providerIds.set(local, remote));
         } else if (item.type === 'function_call_output') {
           const part: Part = {
             functionResponse: {
-              id: item.call_id,
+              ...(providerIds.get(item.call_id) ? { id: providerIds.get(item.call_id) } : {}),
               name: item.name,
               response: { result: JSON.parse(item.output) },
             },
@@ -123,7 +126,7 @@ export class GoogleModel implements LanguageModel {
           const call = part.functionCall!;
           // Stable IDs join results to calls, including Gemini versions that omit IDs.
           const id = call.id || `search_${contents.length}_${i}`;
-          part.functionCall = { ...call, id };
+          providerIds.set(id, call.id);
           return { call_id: id, name: call.name || '', arguments: JSON.stringify(call.args ?? {}) };
         });
       return {
@@ -132,7 +135,10 @@ export class GoogleModel implements LanguageModel {
         continuation: {
           type: 'continuation',
           provider: 'google',
-          value: { role: 'model', parts } satisfies Content,
+          value: {
+            content: { role: 'model', parts } satisfies Content,
+            ids: [...providerIds.entries()],
+          },
         },
         inputTokens,
         outputTokens,

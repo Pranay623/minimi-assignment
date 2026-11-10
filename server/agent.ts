@@ -94,6 +94,7 @@ export async function runAgent(deps: AgentDependencies, request: RunInput): Prom
           mapping.has(id) ? `[${mapping.get(id)}]` : '[historical source not included]',
         ),
         createdAt: old.createdAt,
+        answerStatus: old.status,
         sources,
       };
     });
