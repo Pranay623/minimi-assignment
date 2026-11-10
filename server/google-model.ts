@@ -37,15 +37,18 @@ const declaration: FunctionDeclaration = {
 };
 
 export class GoogleModel implements LanguageModel {
-  private client: GoogleGenAI;
+  private client: Pick<GoogleGenAI, 'models'>;
   constructor(
     apiKey: string,
     private model = 'gemini-2.5-flash',
+    client?: Pick<GoogleGenAI, 'models'>,
   ) {
-    this.client = new GoogleGenAI({
-      apiKey,
-      httpOptions: { timeout: 45_000, retryOptions: { attempts: 1 } },
-    });
+    this.client =
+      client ??
+      new GoogleGenAI({
+        apiKey,
+        httpOptions: { timeout: 45_000, retryOptions: { attempts: 1 } },
+      });
   }
 
   async respond(request: ModelRequest): Promise<ModelResponse> {
