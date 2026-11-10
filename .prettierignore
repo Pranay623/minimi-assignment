@@ -1,0 +1,8 @@
+package-lock.json
+data
+dist
+node_modules
+.gravitas
+playwright-report
+test-results
+docs/images

@@ -73,4 +73,5 @@ export interface AppConfig {
   live: boolean;
   missingKeys: string[];
   model: string;
+  provider?: 'openai' | 'google' | 'agentrouter';
 }
